@@ -1,10 +1,10 @@
-const express = require('express');
-const router = require('./routes/index');
+import express from 'express';
+import router from './routes/index';
 
-const app = express();
 const port = process.env.PORT || 5000;
+const app = express();
 
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json());
 app.use('/', router);
 
 app.listen(port, () => {
