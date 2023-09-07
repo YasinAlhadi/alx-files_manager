@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 import dbClient from './utils/db';
 
 const fileQueue = new Queue('fileQueue', 'redis://127.0.0.1:6379');
+const userQueue = new Queue('userQueue', 'redis://127.0.0.1:6379');
 
 async function thumbNail(localPath, { width }) {
   const thumbnail = await imgThumbnail(localPath, { width });
@@ -33,6 +34,22 @@ fileQueue.process(async (job, done) => {
   if (!thumbnail1 || !thumbnail2 || !thumbnail3) {
     done(Error('Error creating the thumbnails'));
   }
+});
+
+userQueue.process(async (job, done) => {
+  const { userId } = job.data;
+  if (!userId) {
+    done(Error('Missing userId'));
+    return;
+  }
+  const user = await dbClient.users.findOne({ _id: ObjectId(userId) });
+  if (!user) {
+    done(Error('User not found'));
+    return;
+  }
+  const { email } = user;
+  console.log(`Welcome ${email}`);
+  done();
 });
 
 export default fileQueue;
